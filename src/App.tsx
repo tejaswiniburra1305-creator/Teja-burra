@@ -44,54 +44,92 @@ const INITIAL_TREND = Array.from({ length: 10 }, (_, i) => ({
 const INITIAL_STUDENTS: Student[] = [
   {
     id: '1',
-    name: 'burra tejaswini',
+    name: 'Burra Tejaswin',
     attendance: 'present',
     attentionScore: 92,
     attendancePercentage: 98,
     status: 'focused',
     lastActive: 'Just now',
-    details: { age: 16, grade: '10th', parentContact: '555-0101', interests: ['Physics', 'Chess'] }
+    avatar: 'https://picsum.photos/seed/tejaswin/100/100',
+    details: { age: 18, grade: '1st', parentContact: '9798356273', interests: ['music', 'technical events'] }
   },
   {
     id: '2',
-    name: 'koncha venkata nandhini reddy',
+    name: 'Koncha Venkata Nandhini Reddy',
     attendance: 'present',
     attentionScore: 45,
     attendancePercentage: 85,
     status: 'distracted',
     lastActive: '2m ago',
+    avatar: 'https://picsum.photos/seed/nandhini/100/100',
     feedback: 'Appears to be using a mobile device under the desk.',
-    details: { age: 15, grade: '10th', parentContact: '555-0102', interests: ['Art', 'History'] }
+    details: { age: 18, grade: '2nd', parentContact: '9000924763', interests: ['Art', 'History'] }
   },
   {
     id: '3',
-    name: 'mannaru varun teja',
+    name: 'Mannaru Varun Teja',
     attendance: 'present',
     attentionScore: 88,
     attendancePercentage: 95,
     status: 'focused',
     lastActive: 'Just now',
-    details: { age: 16, grade: '10th', parentContact: '555-0103', interests: ['Math', 'Coding'] }
+    avatar: 'https://picsum.photos/seed/varun/100/100',
+    details: { age: 18, grade: '3rd', parentContact: '8873289202', interests: ['technical events', 'Coding'] }
   },
   {
     id: '4',
-    name: 'jana sruthi',
-    attendance: 'late',
+    name: 'Jana sruthi',
+    attendance: 'absent',
     attentionScore: 62,
     attendancePercentage: 92,
     status: 'idle',
     lastActive: '5m ago',
-    details: { age: 15, grade: '10th', parentContact: '555-0104', interests: ['Music', 'Biology'] }
+    avatar: 'https://picsum.photos/seed/sruthi/100/100',
+    details: { age: 18, grade: '4th', parentContact: '9703422460', interests: ['Music', 'technical events'] }
   },
   {
     id: '5',
-    name: 'ooduru vinod kumar',
-    attendance: 'absent',
-    attentionScore: 0,
+    name: 'Ooduru Vinod Kumar Reddy',
+    attendance: 'present',
+    attentionScore: 55,
     attendancePercentage: 78,
     status: 'idle',
     lastActive: 'Yesterday',
-    details: { age: 16, grade: '10th', parentContact: '555-0105', interests: ['Sports', 'Drama'] }
+    avatar: 'https://picsum.photos/seed/vinod/100/100',
+    details: { age: 18, grade: '5th', parentContact: '8923456708', interests: ['Sports', 'technical events'] }
+  },
+  {
+    id: '6',
+    name: 'Kanchi Thilak',
+    attendance: 'absent',
+    attentionScore: 0,
+    attendancePercentage: 92,
+    status: 'idle',
+    lastActive: '2 days ago',
+    avatar: 'https://picsum.photos/seed/thilak/100/100',
+    details: { age: 18, grade: '6th', parentContact: '9123456789', interests: ['Gaming', 'Math'] }
+  },
+  {
+    id: '7',
+    name: 'Kuntumuri Shanmugam',
+    attendance: 'present',
+    attentionScore: 0,
+    attendancePercentage: 94,
+    status: 'idle',
+    lastActive: '1h ago',
+    avatar: 'https://picsum.photos/seed/shanmugam/100/100',
+    details: { age: 18, grade: '7th', parentContact: '9876543210', interests: ['Science', 'Literature'] }
+  },
+  {
+    id: '8',
+    name: 'C Sai Charitesh',
+    attendance: 'present',
+    attentionScore: 0,
+    attendancePercentage: 95,
+    status: 'focused',
+    lastActive: 'Just now',
+    avatar: 'https://picsum.photos/seed/charitesh/100/100',
+    details: { age: 18, grade: '8th', parentContact: '9988776655', interests: ['Robotics', 'AI'] }
   }
 ];
 
@@ -99,21 +137,36 @@ export default function App() {
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'students'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'settings'>('dashboard');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
-  const [metrics, setMetrics] = useState<ClassroomMetrics>({
-    averageAttention: 82,
-    activeStudents: 24,
-    distractedCount: 3,
-    attendanceRate: 94,
-    engagementTrend: INITIAL_TREND,
-    insights: [
-      "High engagement during the current visual presentation.",
-      "Slight dip in attention in the back row observed 5 minutes ago.",
-      "Overall classroom focus is above average for this time of day."
-    ]
+  const [students, setStudents] = useState<Student[]>(() => {
+    const saved = localStorage.getItem('focusflow_students');
+    return saved ? JSON.parse(saved) : INITIAL_STUDENTS;
   });
+  const [metrics, setMetrics] = useState<ClassroomMetrics>(() => {
+    const saved = localStorage.getItem('focusflow_metrics');
+    return saved ? JSON.parse(saved) : {
+      averageAttention: 82,
+      activeStudents: 24,
+      distractedCount: 3,
+      attendanceRate: 94,
+      engagementTrend: INITIAL_TREND,
+      insights: [
+        "High engagement during the current visual presentation.",
+        "Slight dip in attention in the back row observed 5 minutes ago.",
+        "Overall classroom focus is above average for this time of day."
+      ]
+    };
+  });
+
+  // Persist data to local storage
+  useEffect(() => {
+    localStorage.setItem('focusflow_students', JSON.stringify(students));
+  }, [students]);
+
+  useEffect(() => {
+    localStorage.setItem('focusflow_metrics', JSON.stringify(metrics));
+  }, [metrics]);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -236,7 +289,12 @@ export default function App() {
           />
           <NavItem icon={<Activity size={20} />} label="Analytics" />
           <NavItem icon={<Bell size={20} />} label="Notifications" badge="3" />
-          <NavItem icon={<Settings size={20} />} label="Settings" />
+          <NavItem 
+            icon={<Settings size={20} />} 
+            label="Settings" 
+            active={activeTab === 'settings'}
+            onClick={() => setActiveTab('settings')}
+          />
         </nav>
 
         <div className="p-4 mt-auto">
@@ -256,10 +314,12 @@ export default function App() {
         <header className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-40 px-8 py-4 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">
-              {activeTab === 'dashboard' ? 'Classroom Overview' : 'Student Management'}
+              {activeTab === 'dashboard' ? 'Classroom Overview' : 
+               activeTab === 'students' ? 'Student Management' : 'System Settings'}
             </h2>
             <p className="text-slate-500 text-sm">
-              {activeTab === 'dashboard' ? 'Real-time attention monitoring active' : 'Manage student details and attendance'}
+              {activeTab === 'dashboard' ? 'Real-time attention monitoring active' : 
+               activeTab === 'students' ? 'Manage student details and attendance' : 'Configure application preferences'}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -492,7 +552,7 @@ export default function App() {
                 </div>
               </div>
             </>
-          ) : (
+          ) : activeTab === 'students' ? (
             /* Students Tab Content */
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -577,6 +637,63 @@ export default function App() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          ) : (
+            /* Settings Tab Content */
+            <div className="max-w-2xl space-y-8">
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+                <h3 className="text-xl font-bold mb-6">Database Settings</h3>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div>
+                      <p className="font-bold text-slate-700">Local Database Storage</p>
+                      <p className="text-sm text-slate-500">All student data is currently stored in your browser.</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                      Active
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4">
+                    <p className="text-sm text-slate-500 mb-4">
+                      Resetting the database will clear all local changes and restore the initial student roster. This action cannot be undone.
+                    </p>
+                    <button 
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to reset the database? All local changes will be lost.")) {
+                          localStorage.removeItem('focusflow_students');
+                          localStorage.removeItem('focusflow_metrics');
+                          window.location.reload();
+                        }
+                      }}
+                      className="bg-rose-50 text-rose-600 px-6 py-3 rounded-2xl font-bold hover:bg-rose-100 transition-all border border-rose-100"
+                    >
+                      Reset Local Database
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+                <h3 className="text-xl font-bold mb-6">System Preferences</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-slate-700">Auto-Analysis Interval</p>
+                    <select className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 font-medium text-slate-600">
+                      <option>30 seconds</option>
+                      <option>1 minute</option>
+                      <option>5 minutes</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-slate-700">Notifications</p>
+                    <div className="w-12 h-6 bg-indigo-600 rounded-full relative">
+                      <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
