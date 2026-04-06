@@ -22,6 +22,7 @@ export async function analyzeClassroomImage(base64Image: string): Promise<AIAnal
                 "recommendations": string[] (actions for the teacher),
                 "studentIdentifications": [
                   {
+                    "rollNumber": string,
                     "name": string,
                     "status": "focused" | "distracted" | "idle",
                     "score": number,
@@ -57,12 +58,13 @@ export async function analyzeClassroomImage(base64Image: string): Promise<AIAnal
               items: {
                 type: Type.OBJECT,
                 properties: {
+                  rollNumber: { type: Type.STRING },
                   name: { type: Type.STRING },
                   status: { type: Type.STRING, enum: ["focused", "distracted", "idle"] },
                   score: { type: Type.NUMBER },
                   feedback: { type: Type.STRING }
                 },
-                required: ["name", "status", "score", "feedback"]
+                required: ["rollNumber", "name", "status", "score", "feedback"]
               }
             }
           },

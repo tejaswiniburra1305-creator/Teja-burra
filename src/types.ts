@@ -1,5 +1,6 @@
 export interface Student {
   id: string;
+  rollNumber: string;
   name: string;
   avatar?: string;
   attendance: 'present' | 'absent' | 'late';
@@ -32,6 +33,7 @@ export interface AIAnalysisResult {
   summary: string;
   recommendations: string[];
   studentIdentifications?: {
+    rollNumber: string;
     name: string;
     status: 'focused' | 'distracted' | 'idle';
     score: number;

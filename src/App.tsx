@@ -49,6 +49,7 @@ const INITIAL_TREND = Array.from({ length: 10 }, (_, i) => ({
 const INITIAL_STUDENTS: Student[] = [
   {
     id: '1',
+    rollNumber: '2023CS01',
     name: 'Burra Tejaswin',
     attendance: 'present',
     attentionScore: 92,
@@ -60,6 +61,7 @@ const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: '2',
+    rollNumber: '2023CS02',
     name: 'Koncha Venkata Nandhini Reddy',
     attendance: 'present',
     attentionScore: 45,
@@ -72,6 +74,7 @@ const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: '3',
+    rollNumber: '2023CS03',
     name: 'Mannaru Varun Teja',
     attendance: 'present',
     attentionScore: 88,
@@ -83,6 +86,7 @@ const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: '4',
+    rollNumber: '2023CS04',
     name: 'Jana sruthi',
     attendance: 'absent',
     attentionScore: 62,
@@ -94,6 +98,7 @@ const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: '5',
+    rollNumber: '2023CS05',
     name: 'Ooduru Vinod Kumar Reddy',
     attendance: 'present',
     attentionScore: 55,
@@ -105,6 +110,7 @@ const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: '6',
+    rollNumber: '2023CS06',
     name: 'Kanchi Thilak',
     attendance: 'absent',
     attentionScore: 0,
@@ -116,6 +122,7 @@ const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: '7',
+    rollNumber: '2023CS07',
     name: 'Kuntumuri Shanmugam',
     attendance: 'present',
     attentionScore: 0,
@@ -127,6 +134,7 @@ const INITIAL_STUDENTS: Student[] = [
   },
   {
     id: '8',
+    rollNumber: '2023CS08',
     name: 'C Sai Charitesh',
     attendance: 'present',
     attentionScore: 0,
@@ -243,7 +251,7 @@ export default function App() {
         // Update students based on AI identification
         if (result.studentIdentifications) {
           setStudents(prev => prev.map(student => {
-            const iden = result.studentIdentifications?.find(i => i.name.toLowerCase().includes(student.name.toLowerCase()));
+            const iden = result.studentIdentifications?.find(i => i.rollNumber === student.rollNumber);
             if (iden) {
               return {
                 ...student,
@@ -618,6 +626,7 @@ export default function App() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Roll No</th>
                       <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Student</th>
                       <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance</th>
                       <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Attention</th>
@@ -628,6 +637,9 @@ export default function App() {
                   <tbody className="divide-y divide-slate-100">
                     {students.map(student => (
                       <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-500 text-sm">
+                          {student.rollNumber}
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
@@ -909,7 +921,12 @@ export default function App() {
                       {selectedStudent.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
-                      <h3 className="text-3xl font-bold text-slate-800">{selectedStudent.name}</h3>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-3xl font-bold text-slate-800">{selectedStudent.name}</h3>
+                        <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold">
+                          {selectedStudent.rollNumber}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-4 mt-2">
                         <span className="flex items-center gap-1 text-sm text-slate-500">
                           <User size={14} /> {selectedStudent.details.grade} Grade
@@ -1070,7 +1087,7 @@ export default function App() {
                           Grade {parentReportStudent.details.grade}
                         </span>
                         <span className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-bold">
-                          ID: {parentReportStudent.id}
+                          Roll No: {parentReportStudent.rollNumber}
                         </span>
                         <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm font-bold border border-emerald-100">
                           {parentReportStudent.attendancePercentage}% Attendance
