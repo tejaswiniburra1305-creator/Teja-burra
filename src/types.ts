@@ -38,3 +38,15 @@ export interface AIAnalysisResult {
     feedback?: string;
   }[];
 }
+
+export interface Notification {
+  id: number;
+  type: 'alert' | 'info' | 'success' | 'system';
+  title: string;
+  message: string;
+  time: string;
+  icon?: string; // We'll map this to Lucide icons in the component
+  bg: string;
+  border: string;
+  details?: string;
+}

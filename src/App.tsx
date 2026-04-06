@@ -38,7 +38,7 @@ import {
 } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import { analyzeClassroomImage } from './services/geminiService';
-import { AIAnalysisResult, ClassroomMetrics, Student } from './types';
+import { AIAnalysisResult, ClassroomMetrics, Student, Notification } from './types';
 import { cn } from './lib/utils';
 
 const INITIAL_TREND = Array.from({ length: 10 }, (_, i) => ({
@@ -145,6 +145,23 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'settings' | 'analytics' | 'notifications'>('dashboard');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [parentReportStudent, setParentReportStudent] = useState<Student | null>(null);
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    { id: 1, type: 'alert', title: 'Attention Drop Detected', message: 'Class average attention dropped below 70% in the last 5 minutes.', time: '2m ago', bg: 'bg-rose-50', border: 'border-rose-100', details: 'The drop was most significant in the back three rows. This often happens during long lectures without interactive elements.' },
+    { id: 2, type: 'info', title: 'Attendance Update', message: 'Jana sruthi marked as absent for the current session.', time: '15m ago', bg: 'bg-blue-50', border: 'border-blue-100', details: 'Jana has missed 3 sessions this month. It might be time to check in with her parents.' },
+    { id: 3, type: 'success', title: 'Engagement Milestone', message: 'Your class reached a peak engagement score of 94%!', time: '1h ago', bg: 'bg-emerald-50', border: 'border-emerald-100', details: 'This is the highest engagement recorded this week. The use of visual aids seems to be very effective.' },
+    { id: 4, type: 'system', title: 'System Update', message: 'FocusFlow AI model updated to v2.4 for better accuracy.', time: '5h ago', bg: 'bg-slate-50', border: 'border-slate-100', details: 'New features include better detection of micro-expressions and improved low-light performance.' },
+  ]);
+  const getNotificationIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'alert': return <AlertCircle className="text-rose-500" />;
+      case 'info': return <Users className="text-blue-500" />;
+      case 'success': return <TrendingUp className="text-emerald-500" />;
+      case 'system': return <Settings className="text-slate-500" />;
+      default: return <Bell className="text-slate-500" />;
+    }
+  };
+
   const [students, setStudents] = useState<Student[]>(() => {
     const saved = localStorage.getItem('focusflow_students');
     return saved ? JSON.parse(saved) : INITIAL_STUDENTS;
@@ -302,7 +319,7 @@ export default function App() {
           <NavItem 
             icon={<Bell size={20} />} 
             label="Notifications" 
-            badge="3" 
+            badge={notifications.length > 0 ? notifications.length.toString() : undefined} 
             active={activeTab === 'notifications'}
             onClick={() => setActiveTab('notifications')}
           />
@@ -752,38 +769,59 @@ export default function App() {
             <div className="max-w-3xl space-y-6">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xl font-bold text-slate-800">Recent Alerts</h3>
-                <button className="text-sm font-bold text-indigo-600 hover:underline">Mark all as read</button>
+                <button 
+                  onClick={() => setNotifications([])}
+                  className="text-sm font-bold text-indigo-600 hover:underline"
+                >
+                  Clear all
+                </button>
               </div>
               
               <div className="space-y-4">
-                {[
-                  { id: 1, type: 'alert', title: 'Attention Drop Detected', message: 'Class average attention dropped below 70% in the last 5 minutes.', time: '2m ago', icon: <AlertCircle className="text-rose-500" />, bg: 'bg-rose-50', border: 'border-rose-100' },
-                  { id: 2, type: 'info', title: 'Attendance Update', message: 'Jana sruthi marked as absent for the current session.', time: '15m ago', icon: <Users className="text-blue-500" />, bg: 'bg-blue-50', border: 'border-blue-100' },
-                  { id: 3, type: 'success', title: 'Engagement Milestone', message: 'Your class reached a peak engagement score of 94%!', time: '1h ago', icon: <TrendingUp className="text-emerald-500" />, bg: 'bg-emerald-50', border: 'border-emerald-100' },
-                  { id: 4, type: 'system', title: 'System Update', message: 'FocusFlow AI model updated to v2.4 for better accuracy.', time: '5h ago', icon: <Settings className="text-slate-500" />, bg: 'bg-slate-50', border: 'border-slate-100' },
-                ].map(notif => (
-                  <motion.div 
-                    key={notif.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={cn("p-6 rounded-[32px] border flex gap-6 items-start transition-all hover:shadow-md", notif.bg, notif.border)}
-                  >
-                    <div className="p-3 bg-white rounded-2xl shadow-sm">
-                      {notif.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-bold text-slate-900">{notif.title}</h4>
-                        <span className="text-xs font-bold text-slate-400">{notif.time}</span>
+                {notifications.length > 0 ? (
+                  notifications.map(notif => (
+                    <motion.div 
+                      key={notif.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className={cn("p-6 rounded-[32px] border flex gap-6 items-start transition-all hover:shadow-md", notif.bg, notif.border)}
+                    >
+                      <div className="p-3 bg-white rounded-2xl shadow-sm">
+                        {getNotificationIcon(notif.type)}
                       </div>
-                      <p className="text-sm text-slate-600 leading-relaxed">{notif.message}</p>
-                      <div className="mt-4 flex gap-3">
-                        <button className="text-xs font-bold px-4 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-all">Dismiss</button>
-                        <button className="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-xl shadow-sm hover:bg-slate-800 transition-all">View Details</button>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-bold text-slate-900">{notif.title}</h4>
+                          <span className="text-xs font-bold text-slate-400">{notif.time}</span>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">{notif.message}</p>
+                        <div className="mt-4 flex gap-3">
+                          <button 
+                            onClick={() => setNotifications(prev => prev.filter(n => n.id !== notif.id))}
+                            className="text-xs font-bold px-4 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-all"
+                          >
+                            Dismiss
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNotification(notif)}
+                            className="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-xl shadow-sm hover:bg-slate-800 transition-all"
+                          >
+                            View Details
+                          </button>
+                        </div>
                       </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-20 bg-slate-50 rounded-[40px] border border-dashed border-slate-200">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                      <Bell className="text-slate-300" size={32} />
                     </div>
-                  </motion.div>
-                ))}
+                    <p className="text-slate-500 font-medium">No new notifications</p>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -1171,6 +1209,76 @@ export default function App() {
                 >
                   Close Report
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Notification Details Modal */}
+      <AnimatePresence>
+        {selectedNotification && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedNotification(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[40px] shadow-2xl overflow-hidden"
+            >
+              <div className={cn("p-8", selectedNotification.bg)}>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-3 bg-white rounded-2xl shadow-sm">
+                    {getNotificationIcon(selectedNotification.type)}
+                  </div>
+                  <button 
+                    onClick={() => setSelectedNotification(null)}
+                    className="p-2 hover:bg-white/50 rounded-full transition-colors"
+                  >
+                    <X size={24} className="text-slate-400" />
+                  </button>
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">{selectedNotification.title}</h3>
+                <p className="text-slate-500 text-sm font-medium">{selectedNotification.time}</p>
+              </div>
+              <div className="p-8 space-y-6">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Summary</h4>
+                  <p className="text-slate-700 leading-relaxed">{selectedNotification.message}</p>
+                </div>
+                {selectedNotification.details && (
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Detailed Analysis</h4>
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                      <p className="text-sm text-slate-600 leading-relaxed italic">
+                        {selectedNotification.details}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="pt-4 flex gap-4">
+                  <button 
+                    onClick={() => {
+                      setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id));
+                      setSelectedNotification(null);
+                    }}
+                    className="flex-1 px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all"
+                  >
+                    Dismiss Alert
+                  </button>
+                  <button 
+                    onClick={() => setSelectedNotification(null)}
+                    className="flex-1 px-6 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
