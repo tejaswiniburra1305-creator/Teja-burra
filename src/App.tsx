@@ -18,7 +18,12 @@ import {
   Calendar,
   Percent,
   Info,
-  X
+  X,
+  Phone,
+  FileText,
+  Printer,
+  Download,
+  Share2
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -63,7 +68,7 @@ const INITIAL_STUDENTS: Student[] = [
     lastActive: '2m ago',
     avatar: 'https://picsum.photos/seed/nandhini/100/100',
     feedback: 'Appears to be using a mobile device under the desk.',
-    details: { age: 18, grade: '2nd', parentContact: '9000924763', interests: ['Art', 'History'] }
+    details: { age: 18, grade: '2nd', parentContact: '9989030737', interests: ['Art', 'History'] }
   },
   {
     id: '3',
@@ -137,8 +142,9 @@ export default function App() {
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'students' | 'settings' | 'analytics' | 'notifications'>('dashboard');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [parentReportStudent, setParentReportStudent] = useState<Student | null>(null);
   const [students, setStudents] = useState<Student[]>(() => {
     const saved = localStorage.getItem('focusflow_students');
     return saved ? JSON.parse(saved) : INITIAL_STUDENTS;
@@ -287,8 +293,19 @@ export default function App() {
             active={activeTab === 'students'} 
             onClick={() => setActiveTab('students')}
           />
-          <NavItem icon={<Activity size={20} />} label="Analytics" />
-          <NavItem icon={<Bell size={20} />} label="Notifications" badge="3" />
+          <NavItem 
+            icon={<Activity size={20} />} 
+            label="Analytics" 
+            active={activeTab === 'analytics'}
+            onClick={() => setActiveTab('analytics')}
+          />
+          <NavItem 
+            icon={<Bell size={20} />} 
+            label="Notifications" 
+            badge="3" 
+            active={activeTab === 'notifications'}
+            onClick={() => setActiveTab('notifications')}
+          />
           <NavItem 
             icon={<Settings size={20} />} 
             label="Settings" 
@@ -315,11 +332,15 @@ export default function App() {
           <div>
             <h2 className="text-2xl font-bold text-slate-800">
               {activeTab === 'dashboard' ? 'Classroom Overview' : 
-               activeTab === 'students' ? 'Student Management' : 'System Settings'}
+               activeTab === 'students' ? 'Student Management' : 
+               activeTab === 'analytics' ? 'Classroom Analytics' :
+               activeTab === 'notifications' ? 'Notifications' : 'System Settings'}
             </h2>
             <p className="text-slate-500 text-sm">
               {activeTab === 'dashboard' ? 'Real-time attention monitoring active' : 
-               activeTab === 'students' ? 'Manage student details and attendance' : 'Configure application preferences'}
+               activeTab === 'students' ? 'Manage student details and attendance' : 
+               activeTab === 'analytics' ? 'Deep dive into classroom performance trends' :
+               activeTab === 'notifications' ? 'Recent alerts and system updates' : 'Configure application preferences'}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -639,6 +660,132 @@ export default function App() {
                 </table>
               </div>
             </div>
+          ) : activeTab === 'analytics' ? (
+            /* Analytics Tab Content */
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-800">Class Performance Trend</h3>
+                      <p className="text-sm text-slate-500">Average attention levels over the last 60 minutes</p>
+                    </div>
+                    <select className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-600">
+                      <option>Last 60 mins</option>
+                      <option>Last 24 hours</option>
+                      <option>Last 7 days</option>
+                    </select>
+                  </div>
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={INITIAL_TREND}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis 
+                          dataKey="time" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#94a3b8', fontSize: 12 }}
+                          dy={10}
+                        />
+                        <YAxis 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#94a3b8', fontSize: 12 }}
+                          domain={[0, 100]}
+                        />
+                        <Tooltip 
+                          contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="score" 
+                          stroke="#4f46e5" 
+                          strokeWidth={4} 
+                          dot={{ fill: '#4f46e5', strokeWidth: 2, r: 4, stroke: '#fff' }}
+                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="bg-emerald-600 rounded-3xl p-6 text-white shadow-xl shadow-emerald-100">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-white/20 rounded-xl">
+                        <CheckCircle2 size={20} />
+                      </div>
+                      <h4 className="font-bold">Peak Engagement</h4>
+                    </div>
+                    <p className="text-3xl font-black mb-1">94%</p>
+                    <p className="text-emerald-100 text-xs font-medium">Recorded at 10:15 AM today</p>
+                  </div>
+
+                  <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+                    <h4 className="font-bold text-slate-800 mb-4">Top Performers</h4>
+                    <div className="space-y-4">
+                      {students.sort((a, b) => b.attentionScore - a.attentionScore).slice(0, 3).map((student, idx) => (
+                        <div key={student.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
+                              {idx + 1}
+                            </div>
+                            <p className="text-sm font-bold text-slate-700">{student.name}</p>
+                          </div>
+                          <span className="text-sm font-black text-indigo-600">{student.attentionScore}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard title="Avg. Attention" value="82%" trend="+5%" icon={<Brain className="text-indigo-500" />} color="indigo" />
+                <StatCard title="Attendance" value="94%" trend="+2%" icon={<Users className="text-emerald-500" />} color="emerald" />
+                <StatCard title="Engagement" value="High" trend="Stable" icon={<Activity className="text-blue-500" />} color="blue" />
+                <StatCard title="Alerts" value="3" trend="-12%" icon={<AlertCircle className="text-rose-500" />} color="rose" />
+              </div>
+            </div>
+          ) : activeTab === 'notifications' ? (
+            /* Notifications Tab Content */
+            <div className="max-w-3xl space-y-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-bold text-slate-800">Recent Alerts</h3>
+                <button className="text-sm font-bold text-indigo-600 hover:underline">Mark all as read</button>
+              </div>
+              
+              <div className="space-y-4">
+                {[
+                  { id: 1, type: 'alert', title: 'Attention Drop Detected', message: 'Class average attention dropped below 70% in the last 5 minutes.', time: '2m ago', icon: <AlertCircle className="text-rose-500" />, bg: 'bg-rose-50', border: 'border-rose-100' },
+                  { id: 2, type: 'info', title: 'Attendance Update', message: 'Jana sruthi marked as absent for the current session.', time: '15m ago', icon: <Users className="text-blue-500" />, bg: 'bg-blue-50', border: 'border-blue-100' },
+                  { id: 3, type: 'success', title: 'Engagement Milestone', message: 'Your class reached a peak engagement score of 94%!', time: '1h ago', icon: <TrendingUp className="text-emerald-500" />, bg: 'bg-emerald-50', border: 'border-emerald-100' },
+                  { id: 4, type: 'system', title: 'System Update', message: 'FocusFlow AI model updated to v2.4 for better accuracy.', time: '5h ago', icon: <Settings className="text-slate-500" />, bg: 'bg-slate-50', border: 'border-slate-100' },
+                ].map(notif => (
+                  <motion.div 
+                    key={notif.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn("p-6 rounded-[32px] border flex gap-6 items-start transition-all hover:shadow-md", notif.bg, notif.border)}
+                  >
+                    <div className="p-3 bg-white rounded-2xl shadow-sm">
+                      {notif.icon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-bold text-slate-900">{notif.title}</h4>
+                        <span className="text-xs font-bold text-slate-400">{notif.time}</span>
+                      </div>
+                      <p className="text-sm text-slate-600 leading-relaxed">{notif.message}</p>
+                      <div className="mt-4 flex gap-3">
+                        <button className="text-xs font-bold px-4 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-all">Dismiss</button>
+                        <button className="text-xs font-bold px-4 py-2 bg-slate-900 text-white rounded-xl shadow-sm hover:bg-slate-800 transition-all">View Details</button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           ) : (
             /* Settings Tab Content */
             <div className="max-w-2xl space-y-8">
@@ -803,13 +950,227 @@ export default function App() {
                 </div>
 
                 <div className="mt-8 pt-8 border-t border-slate-100 flex justify-end gap-4">
-                  <button className="px-6 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors">
-                    Contact Parent
-                  </button>
-                  <button className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100">
-                    View Full Report
+                  <a 
+                    href={`tel:${selectedStudent.details.parentContact}`}
+                    className="px-6 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-2"
+                  >
+                    <Phone size={18} /> Contact Parent
+                  </a>
+                  <button 
+                    onClick={() => {
+                      setParentReportStudent(selectedStudent);
+                      setSelectedStudent(null);
+                    }}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 flex items-center gap-2"
+                  >
+                    <FileText size={18} /> View Full Report
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Parent Report Modal */}
+      <AnimatePresence>
+        {parentReportStudent && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setParentReportStudent(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              className="relative w-full max-w-4xl bg-white rounded-[40px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            >
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white">
+                    <FileText size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-800">Academic & Engagement Report</h3>
+                    <p className="text-sm text-slate-500">Official Classroom Performance Summary</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="p-2 hover:bg-white rounded-xl transition-colors text-slate-500 hover:text-indigo-600 border border-transparent hover:border-slate-200">
+                    <Printer size={20} />
+                  </button>
+                  <button className="p-2 hover:bg-white rounded-xl transition-colors text-slate-500 hover:text-indigo-600 border border-transparent hover:border-slate-200">
+                    <Download size={20} />
+                  </button>
+                  <button className="p-2 hover:bg-white rounded-xl transition-colors text-slate-500 hover:text-indigo-600 border border-transparent hover:border-slate-200">
+                    <Share2 size={20} />
+                  </button>
+                  <button 
+                    onClick={() => setParentReportStudent(null)}
+                    className="p-2 hover:bg-white rounded-xl transition-colors text-slate-400 hover:text-rose-500 border border-transparent hover:border-slate-200 ml-2"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 space-y-10">
+                {/* Report Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-10 border-b border-slate-100">
+                  <div className="flex items-center gap-8">
+                    <div className="w-32 h-32 rounded-[40px] bg-slate-100 border-4 border-white shadow-xl overflow-hidden">
+                      <img src={parentReportStudent.avatar} alt={parentReportStudent.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-4xl font-black text-slate-900 tracking-tight">{parentReportStudent.name}</h2>
+                      <div className="flex flex-wrap gap-3">
+                        <span className="px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold border border-indigo-100">
+                          Grade {parentReportStudent.details.grade}
+                        </span>
+                        <span className="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-bold">
+                          ID: {parentReportStudent.id}
+                        </span>
+                        <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm font-bold border border-emerald-100">
+                          {parentReportStudent.attendancePercentage}% Attendance
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-slate-900 text-white p-6 rounded-[32px] min-w-[240px]">
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4">Parent Contact</p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
+                        <Phone size={18} className="text-indigo-400" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-lg">{parentReportStudent.details.parentContact}</p>
+                        <p className="text-xs text-slate-500">Primary Contact Number</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                        <Brain size={20} />
+                      </div>
+                      <h4 className="font-bold text-slate-700">Attention Score</h4>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <span className="text-4xl font-black text-slate-900">{parentReportStudent.attentionScore}%</span>
+                      <span className="text-sm font-bold text-emerald-500 mb-1.5">↑ 4% this week</span>
+                    </div>
+                    <div className="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 rounded-full" 
+                        style={{ width: `${parentReportStudent.attentionScore}%` }} 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                        <CheckCircle2 size={20} />
+                      </div>
+                      <h4 className="font-bold text-slate-700">Participation</h4>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <span className="text-4xl font-black text-slate-900">High</span>
+                      <span className="text-sm font-bold text-emerald-500 mb-1.5">Top 10%</span>
+                    </div>
+                    <p className="mt-4 text-xs text-slate-500 leading-relaxed">
+                      Active participation in classroom discussions and group activities.
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                        <TrendingUp size={20} />
+                      </div>
+                      <h4 className="font-bold text-slate-700">Learning Path</h4>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <span className="text-4xl font-black text-slate-900">Steady</span>
+                      <span className="text-sm font-bold text-slate-400 mb-1.5">On track</span>
+                    </div>
+                    <p className="mt-4 text-xs text-slate-500 leading-relaxed">
+                      Consistent progress across all core subjects this semester.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Detailed Analysis */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <MessageSquare size={20} className="text-indigo-600" />
+                      Teacher's Observation
+                    </h4>
+                    <div className="bg-indigo-50/50 p-8 rounded-[32px] border border-indigo-100 relative">
+                      <span className="absolute top-4 left-4 text-6xl text-indigo-200 font-serif opacity-50">"</span>
+                      <p className="text-indigo-900 leading-relaxed italic relative z-10">
+                        {parentReportStudent.feedback || "The student has shown exceptional focus during today's session. They are consistently engaged with the material and contribute meaningfully to class discussions. We recommend continuing to encourage their interest in their favorite subjects."}
+                      </p>
+                      <div className="mt-6 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                          TR
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Dr. Thomas Reed</p>
+                          <p className="text-xs text-slate-500">Lead Physics Instructor</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <Activity size={20} className="text-indigo-600" />
+                      Engagement Trends
+                    </h4>
+                    <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100 h-[240px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={INITIAL_TREND}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                          <XAxis dataKey="time" hide />
+                          <YAxis hide domain={[0, 100]} />
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="score" 
+                            stroke="#4f46e5" 
+                            strokeWidth={4} 
+                            dot={false}
+                            animationDuration={2000}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 bg-slate-50 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p className="text-sm text-slate-500 text-center md:text-left">
+                  This report is generated automatically by FocusFlow AI. For detailed inquiries, please contact the school administration.
+                </p>
+                <button 
+                  onClick={() => setParentReportStudent(null)}
+                  className="w-full md:w-auto px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+                >
+                  Close Report
+                </button>
               </div>
             </motion.div>
           </div>
